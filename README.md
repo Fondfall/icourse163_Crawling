@@ -9,5 +9,7 @@ Crawing the discission data.
 使用：
 
 1.在程序开头部分修改个人信息，包括账号密码，Chromedriver地址，MOOC讨论区地址
+
 2.第一次运行在程序结尾将login函数的注释删除，cookie函数注释，若运行过后可直接用cookie登录
+
 3.在程序同目录下会生成数据Excel表格
