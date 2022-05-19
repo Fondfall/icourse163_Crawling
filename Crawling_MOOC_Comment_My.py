@@ -5,22 +5,17 @@ import re
 from lxml import etree
 import json
 import Data_process as pr
-
-############################################################################################################
 from selenium.webdriver.common.by import By
 
-login_url = "https://www.icourse163.org/member/login.htm#/webLoginIndex"  # MOOC登录地址
-# comment_url = "https://www.icourse163.org/learn/HZAU-1003241007?tid=1450220482#/learn/forumindex"  # MOOC讨论区地址
-# comment_url = "https://www.icourse163.org/learn/BIT-268001?tid=1465711517#/learn/forumindex"
-# comment_url = 'https://www.icourse163.org/learn/HIT-154005?tid=187002#/learn/forumindex'
-# comment_url = 'https://www.icourse163.org/learn/BIT-268001?tid=1461953449#/learn/forumindex'    # Python146页讨论区
-# comment_url = 'https://www.icourse163.org/learn/BIT-268001?tid=1207014257#/learn/forumindex'    # Python162页讨论区
-comment_url = 'https://www.icourse163.org/learn/TONGJI-53004?tid=1206776256#/learn/forumindex'    # 同济大学高数247页讨论区
-path = "chromedriver.exe"  # Chromedriver地址
-email = "chenyj_un@163.com"
-password = "ywwwan9926.^."
-driver = webdriver.Chrome(executable_path=path)
 
+############################################################################################################
+
+login_url = "https://www.icourse163.org/member/login.htm#/webLoginIndex"  # MOOC登录地址
+comment_url = 'https://www.icourse163.org/learn/BIT-268001?tid=1207014257#/learn/forumindex'    # MOOC讨论区地址/Python162页讨论区
+path = "chromedriver.exe"  # Chromedriver地址
+email = "youremail"
+password = "yourpassword"
+driver = webdriver.Chrome(executable_path=path)
 
 ############################################################################################################
 
@@ -49,8 +44,6 @@ def login():
     f1 = open('cookies.txt', 'w')
     f1.write(json.dumps(cookies))
     f1.close()
-    # print(cookies)
-    # print(type(cookies))
     driver.close()
     return None
 
@@ -72,7 +65,6 @@ def getCommentPageNum():
     driver.get(comment_url)
     time.sleep(1)  # 没有的话可能获取的内容为空
     content = driver.page_source
-    # print(content)
     dom = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
     page_list = dom.xpath(
         '//*[@id="courseLearn-inner-box"]/div/div[7]/div/div[2]/div/div[1]/div[2]/div/a//text()')  # 页码列表
@@ -85,20 +77,15 @@ def getCommentPageNum():
 def getpageInfo(url_head, pagenum):
     df_all = pd.DataFrame()
     # for page_num in range(0, pagenum):
-    for page_num in range(181, pagenum):
+    for page_num in range(0, pagenum):
         try:
-            url = url_head + '?t=0&p={}'.format(page_num + 1)  ####
-            # print(url)
-            # url = 'https://www.icourse163.org/learn/HIT-154005?tid=187002#/learn/forumindex?t=0&p=8'
+            url = url_head + '?t=0&p={}'.format(page_num + 1)
             print('正在获取第{}页的数据'.format(page_num + 1))  # 打印进度
             tmp = get_comment_detail(url)  # 调用函数
             df_all = df_all.append(tmp, ignore_index=True)
-            # df_all.to_excel('test.xlsx')#
-            # time.sleep(1)  # 休眠一秒
             print('第{}页数据读取完成'.format(page_num + 1))  # 打印进度
         except Exception as e:
             print("Exception1 had happen")
-            # continue
             break
     return df_all
 
@@ -138,8 +125,6 @@ def get_comment_detail(url_head):
         commentTime.append(li.xpath('./span/span[1]/span[2]/text()'))
         href = li.xpath('./div/a/@href')  # 进入评论回复的地址[#/learn/forumdetail?pid=1002189262]
         replynum = li.xpath('./p[2]/text()')  # 回复数
-        # comment_url:https://www.icourse163.org/learn/HZAU-1003241007?tid=1450220482
-        # commenthref:#/learn/forumdetail?pid=1002189262
         commenthref = comment_url[:-18] + href[0]  # 拼接成一个完整的链接
         name = li.xpath('./span/span[1]/span[1]/span/span[2]/a/@title')
         ushref = li.xpath('./span/span[1]/span[1]/span/span[2]/a/@href')
@@ -171,8 +156,6 @@ def get_comment_detail(url_head):
                 excellent_certificate.append('无')
             else:
                 excellent_certificate.append(mi)
-            # excellent_certificate.append(dom2.xpath(
-            #     '//*[@id="j-mycert-body"]/div/div[2]/div[1]/div/div/div[1]/text()'))
             driver.get(pass_certificate_url)
             driver.refresh()
             time.sleep(.5)
@@ -183,8 +166,6 @@ def get_comment_detail(url_head):
                 pass_certificate.append('无')
             else:
                 pass_certificate.append(mi)
-            # pass_certificate.append(dom2.xpath(
-            #     '//*[@id="j-mycert-body"]/div/div[2]/div[1]/div/div/div[1]/text()'))
             print("原始", commentList[-1], excellent_certificate[-1], pass_certificate[-1])
             dom2 = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
             mi = dom2.xpath('//*[@id="j-self-content"]/div/div[3]/span/text()')
@@ -198,10 +179,8 @@ def get_comment_detail(url_head):
         # print('ID:'+ ID)
         user_href.append(ushref)
         user_ID.append(ID)
-        # user_infoList.append(dom2.xpath('//*[@id="j-self-content"]/div/div[3]/span/text()'))
 
         driver.get(commenthref)  # 进入该评论
-        # driver.get('https://www.icourse163.org/learn/HIT-154005?tid=187002#/learn/forumdetail?pid=915525')  # test
         time.sleep(1)
         content = driver.page_source
         dom = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
@@ -255,8 +234,6 @@ def get_comment_detail(url_head):
                             ec = '无'
                         else:
                             ec = mi
-                        # excellent_certificate.append(dom2.xpath(
-                        #     '//*[@id="j-mycert-body"]/div/div[2]/div[1]/div/div/div[1]/text()'))
                         driver.get(pass_certificateurl)
                         driver.refresh()
                         time.sleep(.5)
@@ -267,8 +244,6 @@ def get_comment_detail(url_head):
                             pc = '无'
                         else:
                             pc = mi
-                        # pass_certificate.append(dom2.xpath(
-                        #     '//*[@id="j-mycert-body"]/div/div[2]/div[1]/div/div/div[1]/text()'))
                         dom2 = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
                         mi = dom2.xpath('//*[@id="j-self-content"]/div/div[3]/span/text()')
                         if not mi:
@@ -279,7 +254,6 @@ def get_comment_detail(url_head):
                             uinfo = mi
                         else:
                             uinfo = mi
-                    # user_infoList.append(dom2.xpath('//*[@id="j-self-content"]/div/div[3]/span/text()'))
                     print("回复", reply, ec, pc, vote, timee, userName, comNum)
 
                     post_state.append('回复')
@@ -296,7 +270,6 @@ def get_comment_detail(url_head):
                     pass_certificate.append(pc)
                     if comNum != ['评论(0)']:  # 评论数不为0
                         con = di.xpath('./div[2]/div/div/div/div/div/div')
-                        # print(con)
                         le = len(con)
                         for ei in con:  # 会多出一组空数据，跳出最后一次循环，避免写入多余的无用数据
                             if le == 1:
@@ -368,9 +341,6 @@ def get_comment_detail(url_head):
                             excellent_certificate.append(ec1)
                             pass_certificate.append(pc1)
                             le = le - 1
-                # driver.get('https://www.icourse163.org/learn/HIT-154005?tid=187002#/learn/forumdetail?pid=915525')
-                # jump = driver.find_element_by_class_name('zbtn znxt')  # 不同页面网页地址相同，只能通过点击下一页进行切换
-                # jump = driver.find_element(by=By.CLASS_NAME, value='zbtn znxt')# 不同页面网页地址相同，只能通过点击下一页进行切换
                 if (page_num - p) != 1:  # 非最后一页时进行翻页
                     # time.sleep(3)
                     driver.get(commenthref)
@@ -382,61 +352,7 @@ def get_comment_detail(url_head):
                         jump.click()  # 不同回复页面网页地址相同，只能通过点击下一页进行切换
 
                 time.sleep(1)
-                # url = commenthref
-
-            # except Exception as f:
-            #     print('Exception2 had happened')
-            #     continue
-            # break
-            # driver.get(commenthref)
-            # time.sleep(5)
-            # driver.quit()
-
-    # user_hrefList = []
-    # for i in user_href:  # 进入用户界面的链接
-    #     if i == []:
-    #         user_hrefList.append('匿名')
-    #     else:
-    #         s = ' '.join(str(j) for j in i)
-    #         user_hrefList.append(url_head.split('#')[0] + s)
-    # # print(user_hrefList)
-    #
-    # for i in user_hrefList:
-    #     if i == '匿名':
-    #         user_indexList.append('匿名')
-    #     else:
-    #         s = ''.join(str(j) for j in i)
-    #         t = s.split('uid=')[1]
-    #         # print(t)
-    #         user_link = s.split('/learn')[0] + '/home.htm?userId=' + t + '#/home/discuss?page=1'  # 拼接用户主页的链接
-    #         user_indexList.append(user_link)
-    # print(user_indexList)
-
-    # count = 1
-    # for i in user_indexList:
-    #     if i == '匿名':
-    #         user_infoList.append('匿名')
-    #     else:
-    #         driver.get(i)
-    #         # time.sleep(2)
-    #         # f2 = open("cookies.txt")
-    #         # cookies = json.loads(f2.read())
-    #         # # 使用cookies登录
-    #         # for cook in cookies:
-    #         #     driver.add_cookie(cook)
-    #         # # 刷新页面
-    #         # driver.refresh()
-    #         # time.sleep(2)
-    #         # print(ID)
-    #         # driver.execute_script('window.scrollTo(0, 200)')  # 遇见了反爬行为，通过滚动页面对抗
-    #         print('成功进入第' + str(count) + '个用户主页')
-    #         content = driver.page_source
-    #         dom2 = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
-    #         user_infoList.append(dom2.xpath('//*[@id="j-self-content"]/div/div[3]/span/text()'))
-    #         count = count + 1
-    #         # driver.quit()
-    # # print(user_infoList)
-
+               
     tmp = pd.DataFrame({
         '状态': post_state,
         '用户名': namesList,
@@ -448,7 +364,6 @@ def get_comment_detail(url_head):
         '浏览次数': watch_numList,
         '回复次数': reply_numList,
         '投票数': vote_num,
-        # '用户主页网址:': user_indexList,
         '优秀证书': excellent_certificate,
         '合格证书': pass_certificate,
     })
@@ -460,54 +375,10 @@ if __name__ == '__main__':
     cookie()
     pagenum = getCommentPageNum()
     pagenum = int(pagenum)
-    # df_all = getpageInfo(comment_url, 1)
     df_all = getpageInfo(comment_url, pagenum)
-    df_all.to_excel('test5_12_3.xlsx')
+    df_all.to_excel('test.xlsx')
     print('数据写入完成，正在处理格式')
-    # df_all.to_csv('test3.csv', encoding='utf_8_sig', mode='a')
-    pr.Process('test5_12_3.xlsx', 'test5_12_3_DP.xlsx')     # 数据处理
+    pr.Process('test.xlsx', 'test.xlsx')     # 数据处理
     print('数据处理完成')
-    '''
-    获取证书测试
-    excellent_certificate = []  # 优秀证书
-    pass_certificate = []  # 通过证书
-    ID = 1392722962
-    excellent_certificate_url = 'https://www.icourse163.org/home.htm?userId=' + str(ID) + '#/home/mycert?userId=' + str(ID) + '+&type=1&p=1'
-    pass_certificate_url = 'https://www.icourse163.org/home.htm?userId=' + str(ID) + '#/home/mycert?userId=' + str(ID) + '+&type=2&p=1'
-    driver.get(excellent_certificate_url)
-    time.sleep(1)
-    content = driver.page_source
-    dom = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
-    excellent_certificate.append(dom.xpath('//*[@id="j-mycert-body"]/div/div[2]/div/div/div/div[1]/text()'))
-    ########换行符问题
-    driver.get(pass_certificate_url)
-    driver.refresh()
-    time.sleep(1)
-    content = driver.page_source
-    dom1 = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
-    pass_certificate.append(dom1.xpath('//*[@id="j-mycert-body"]/div/div[2]/div/div/div/div[1]/text()'))
-    print(excellent_certificate, pass_certificate)
-    '''
-    '''
-    # 回复获取测试
-    # df_all = get_comment_detail('https://www.icourse163.org/learn/HIT-154005?tid=187002#/learn/forumindex?t=0&p=9')
-    # df_all.to_excel('comment6.xlsx')
-    driver.get('https://www.icourse163.org/learn/HIT-154005?tid=187002#/learn/forumdetail?pid=915525')
-    time.sleep(1)
-    # content = driver.page_source
-    # dom2 = etree.HTML(content, etree.HTMLParser(encoding='utf-8'))
-    print('enter there')
-    time.sleep(5)
-    # jump = driver.find_element_by_class_name('zbtn znxt')  # 不同页面网页地址相同，只能通过点击下一页进行切换
-    # jump = driver.find_element_by_name('下一页')  # 不同页面网页地址相同，只能通过点击下一页进行切换
-    # driver.execute_script('window.scrollBy(0,3000)')
-    time.sleep(2)
-    # jump = driver.find_element_by_xpath("//a[text()='下一页']")  #element not interactable报错
-    jump = driver.find_element_by_xpath(
-        '//*[@id="courseLearn-inner-box"]/div/div[2]/div/div[4]/div/div[1]/div[2]/div/a[11]')  # success nice!
-    jump.click()
-    print('pass')
-    time.sleep(3)
-    '''
     time.sleep(3)
     driver.quit()
