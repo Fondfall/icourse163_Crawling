@@ -342,7 +342,6 @@ def get_comment_detail(url_head):
                             pass_certificate.append(pc1)
                             le = le - 1
                 if (page_num - p) != 1:  # 非最后一页时进行翻页
-                    # time.sleep(3)
                     driver.get(commenthref)
                     time.sleep(1)
                     for i in range(0, p + 1):
@@ -378,7 +377,7 @@ if __name__ == '__main__':
     df_all = getpageInfo(comment_url, pagenum)
     df_all.to_excel('test.xlsx')
     print('数据写入完成，正在处理格式')
-    pr.Process('test.xlsx', 'test.xlsx')     # 数据处理
+    pr.Process('test.xlsx', 'test_DP.xlsx')     # 数据处理
     print('数据处理完成')
     time.sleep(3)
     driver.quit()
